@@ -1,227 +1,198 @@
 
 import streamlit as st
-import random
 
 st.set_page_config(
-    page_title="30일 부자 되기",
-    page_icon="💰",
+    page_title="나의 회사 생활 유형",
+    page_icon="🏢",
     layout="centered"
 )
 
-# -------------------------
-# 1. 게임 기본 설정
-# -------------------------
+# 회사 생활 테스트 질문
+questions = [
+    {
+        "q": "월요일 아침, 출근하자마자 상사가 일을 준다면?",
+        "options": [
+            ("일단 계획부터 세운다 📋", "ace"),
+            ("동료들과 일정을 맞춘다 🤝", "peace"),
+            ("마감 직전까지 효율을 계산한다 ☕", "lazy"),
+            ("오늘도 파이팅! 신나게 시작한다 🎉", "fun")
+        ]
+    },
+    {
+        "q": "갑자기 오늘까지 끝내야 하는 일이 생겼다!",
+        "options": [
+            ("우선순위를 정하고 바로 시작!", "ace"),
+            ("팀원들과 나눠서 해결한다", "peace"),
+            ("꼭 필요한 것부터 빠르게 처리한다", "lazy"),
+            ("일단 커피부터 마시고 정신을 차린다", "fun")
+        ]
+    },
+    {
+        "q": "점심시간에 가장 듣고 싶은 말은?",
+        "options": [
+            ("오늘 업무 벌써 다 끝냈어?", "ace"),
+            ("다 같이 밥 먹으러 가자!", "peace"),
+            ("오늘은 칼퇴 가능하대!", "lazy"),
+            ("오늘 점심에 맛집 가자!", "fun")
+        ]
+    },
+    {
+        "q": "팀 프로젝트에서 내가 주로 맡는 역할은?",
+        "options": [
+            ("일정과 결과를 책임지는 리더", "ace"),
+            ("의견을 조율하는 중재자", "peace"),
+            ("복잡한 일을 간단하게 만드는 효율 담당", "lazy"),
+            ("분위기를 살리는 아이디어 담당", "fun")
+        ]
+    },
+    {
+        "q": "상사가 내 이름을 부르며 다가온다. 내 반응은?",
+        "options": [
+            ("네! 필요한 자료 준비했습니다", "ace"),
+            ("무슨 일이신지 차분하게 듣는다", "peace"),
+            ("제발 추가 업무만 아니길 빈다", "lazy"),
+            ("혹시 좋은 소식인가요? 😆", "fun")
+        ]
+    },
+    {
+        "q": "동료가 내게 일을 도와달라고 한다면?",
+        "options": [
+            ("내 업무부터 정리하고 도와준다", "ace"),
+            ("힘들어 보이면 바로 도와준다", "peace"),
+            ("어디까지 도와야 하는지 먼저 확인한다", "lazy"),
+            ("도와주는 대신 커피 한 잔을 요청한다", "fun")
+        ]
+    },
+    {
+        "q": "드디어 금요일 오후 5시!",
+        "options": [
+            ("남은 일을 마무리하고 퇴근한다", "ace"),
+            ("동료들에게 주말 인사를 건넨다", "peace"),
+            ("컴퓨터 끄고 누구보다 빠르게 퇴근!", "lazy"),
+            ("퇴근 후 약속을 잡으러 간다", "fun")
+        ]
+    },
+    {
+        "q": "회사 생활에서 가장 중요한 것은?",
+        "options": [
+            ("성과와 성장 📈", "ace"),
+            ("좋은 사람들과의 관계 💗", "peace"),
+            ("시간 대비 효율과 여유 🛋️", "lazy"),
+            ("즐거움과 재미 🎊", "fun")
+        ]
+    }
+]
 
-START_MONEY = 1_000_000
-DAILY_SALARY = 100_000
-WIN_MONEY = 5_000_000
-TOTAL_DAYS = 30
+# 결과 데이터
+results = {
+    "ace": {
+        "name": "🏆 회사 에이스형",
+        "subtitle": "일잘러 DNA가 기본 장착된 타입",
+        "desc": "책임감이 강하고 목표를 달성하는 데 집중해요. 맡은 일은 끝까지 해내는 편이라 주변의 신뢰를 얻기 쉬워요.",
+        "strength": "계획력, 실행력, 책임감",
+        "weakness": "모든 일을 혼자 책임지려다 지칠 수 있어요.",
+        "tip": "가끔은 다른 사람에게 맡기는 것도 능력이에요!"
+    },
+    "peace": {
+        "name": "🕊️ 평화주의자형",
+        "subtitle": "우리 팀 사이좋게 지내요!",
+        "desc": "사람들의 감정과 관계를 중요하게 생각해요. 갈등을 줄이고 서로 협력할 수 있는 분위기를 만드는 데 강해요.",
+        "strength": "공감 능력, 협업, 배려",
+        "weakness": "싫은 소리를 못 해서 일을 떠안을 수 있어요.",
+        "tip": "모든 사람을 만족시킬 필요는 없어요. 내 의견도 소중해요!"
+    },
+    "lazy": {
+        "name": "☕ 효율 추구형 월급 루팡",
+        "subtitle": "일은 적게, 효율은 높게!",
+        "desc": "불필요한 절차를 싫어하고 가장 빠르고 편한 방법을 찾는 타입이에요. 효율적인 업무 방식에 재능이 있을 수 있어요.",
+        "strength": "효율성, 현실 감각, 우선순위 판단",
+        "weakness": "귀찮은 일을 미루다가 마감에 쫓길 수 있어요.",
+        "tip": "미루기 전에 5분만 시작해 보세요. 의외로 금방 끝날지도!"
+    },
+    "fun": {
+        "name": "🎉 분위기 메이커형",
+        "subtitle": "우리 회사의 인간 비타민",
+        "desc": "밝은 에너지와 아이디어로 주변에 활력을 줘요. 딱딱한 분위기를 부드럽게 바꾸는 데 강점이 있어요.",
+        "strength": "창의성, 친화력, 긍정 에너지",
+        "weakness": "재미있는 일에 집중하다가 세부 사항을 놓칠 수 있어요.",
+        "tip": "재미와 체크리스트를 함께 활용하면 최고의 조합이에요!"
+    }
+}
 
-# -------------------------
-# 2. 게임 초기화
-# -------------------------
+if "question_index" not in st.session_state:
+    st.session_state.question_index = 0
+    st.session_state.answers = []
+    st.session_state.game_round = 0
 
-def reset_game():
-    st.session_state.day = 1
-    st.session_state.money = START_MONEY
-    st.session_state.game_over = False
-    st.session_state.logs = [
-        "🎮 게임 시작! 30일 안에 500만 원을 모아 보세요."
-    ]
-    st.session_state.first_action = True
-
-if "day" not in st.session_state:
-    reset_game()
-
-# -------------------------
-# 3. 하루 진행 함수
-# -------------------------
-
-def play_day(action):
-    # 월급 받기
-    st.session_state.money += DAILY_SALARY
-
-    log = [
-        f"💵 {st.session_state.day}일 차 월급 "
-        f"+{DAILY_SALARY:,}원"
-    ]
-
-    money = st.session_state.money
-
-    # 선택한 행동 실행
-    if action == "저축하기":
-        # 저축 보너스: 현재 자산의 0.2%
-        interest = int(money * 0.002)
-        st.session_state.money += interest
-        log.append(f"🏦 저축 이자 +{interest:,}원")
-
-    elif action == "투자하기":
-        # 최대 10만 원을 투자
-        invest = min(100_000, money)
-
-        # 투자 수익률: -20%, -10%, 0%, +10%, +20%
-        rate = random.choice([-0.2, -0.1, 0, 0.1, 0.2])
-        profit = int(invest * rate)
-
-        st.session_state.money += profit
-
-        if profit > 0:
-            log.append(f"📈 투자 성공! +{profit:,}원")
-        elif profit < 0:
-            log.append(f"📉 투자 손실! {profit:,}원")
-        else:
-            log.append("➖ 투자 손익이 없습니다.")
-
-    elif action == "쇼핑하기":
-        cost = min(50_000, money)
-        st.session_state.money -= cost
-        log.append(f"🛍️ 쇼핑 비용 -{cost:,}원")
-
-        mood = random.choice([
-            "마음에 쏙 드는 상품을 찾았어요!",
-            "충동구매였나 봐요...",
-            "할인 상품을 잘 골랐어요!",
-        ])
-        log.append(f"✨ {mood}")
-
-    # 랜덤 이벤트
-    event = random.choice([
-        ("🎁 깜짝 보너스!", 100_000),
-        ("🍀 길에서 행운을 만났어요!", 50_000),
-        ("📱 휴대폰 수리비가 발생했어요.", -80_000),
-        ("🎉 친구에게 선물을 받았어요!", 30_000),
-        ("☔ 예상치 못한 지출이 생겼어요.", -50_000),
-        ("😌 오늘은 별일이 없네요.", 0),
-    ])
-
-    event_name, event_money = event
-
-    if event_money < 0:
-        # 현재 가진 돈보다 큰 지출은 발생하지 않음
-        event_money = -min(
-            st.session_state.money,
-            abs(event_money)
-        )
-
-    st.session_state.money += event_money
-
-    if event_money > 0:
-        log.append(f"{event_name} +{event_money:,}원")
-    elif event_money < 0:
-        log.append(f"{event_name} {event_money:,}원")
-    else:
-        log.append(event_name)
-
-    # 하루 결과 기록
-    st.session_state.logs = log + st.session_state.logs
-    st.session_state.logs = st.session_state.logs[:60]
-
-    # 다음 날로 이동
-    st.session_state.day += 1
-
-    # 승리 / 패배 판정
-    if st.session_state.money <= 0:
-        st.session_state.money = 0
-        st.session_state.game_over = True
-        st.session_state.result = "파산했어요! 💸"
-
-    elif st.session_state.day > TOTAL_DAYS:
-        st.session_state.game_over = True
-
-        if st.session_state.money >= WIN_MONEY:
-            st.session_state.result = "부자 달성! 🏆"
-        else:
-            st.session_state.result = "도전 종료! 💰"
-
-# -------------------------
-# 4. 게임 화면
-# -------------------------
-
-st.title("💰 30일 부자 되기")
-st.write("월급을 관리하고, 소비와 투자로 나만의 자산을 만들어 보세요!")
-
+st.title("🏢 나의 회사 생활 유형 테스트")
+st.caption("8가지 회사 상황으로 알아보는 나의 직장 캐릭터!")
 st.progress(
-    min((st.session_state.day - 1) / TOTAL_DAYS, 1.0)
+    min(st.session_state.question_index / len(questions), 1.0)
 )
 
-# 자산 및 날짜 표시
-c1, c2 = st.columns(2)
+if st.session_state.question_index < len(questions):
+    i = st.session_state.question_index
+    question = questions[i]
 
-c1.metric(
-    "💵 현재 자산",
-    f"{st.session_state.money:,}원"
-)
+    st.markdown(f"### Q{i + 1}. {question['q']}")
+    st.write("가장 나다운 선택 하나를 골라 봐!")
 
-if st.session_state.game_over:
-    shown_day = min(st.session_state.day - 1, TOTAL_DAYS)
-else:
-    shown_day = st.session_state.day
-
-c2.metric(
-    "📅 진행 날짜",
-    f"{shown_day} / {TOTAL_DAYS}일"
-)
-
-st.caption(
-    f"목표: {WIN_MONEY:,}원 | "
-    f"매일 월급: {DAILY_SALARY:,}원"
-)
-
-st.divider()
-
-# -------------------------
-# 5. 행동 선택
-# -------------------------
-
-if not st.session_state.game_over:
-    st.subheader(f"📆 {st.session_state.day}일 차")
-    st.write("오늘은 어떤 행동을 할까요?")
-
-    actions = ["저축하기", "투자하기", "쇼핑하기"]
-
-    # 첫 행동은 쇼핑하기로 설정
-    default_index = 2 if st.session_state.first_action else 0
-
-    action = st.radio(
-        "행동 선택",
-        actions,
-        index=default_index,
-        horizontal=True
+    options = question["options"]
+    selected = st.radio(
+        "선택지",
+        options=range(len(options)),
+        format_func=lambda n: options[n][0],
+        key=f"question_{st.session_state.game_round}_{i}",
+        label_visibility="collapsed"
     )
 
-    if st.button("🎲 하루 진행하기", use_container_width=True):
-        st.session_state.first_action = False
-        play_day(action)
+    if st.button("다음 질문 ➜", type="primary", use_container_width=True):
+        st.session_state.answers.append(options[selected][1])
+        st.session_state.question_index += 1
         st.rerun()
 
 else:
-    st.subheader(st.session_state.result)
+    scores = {
+        kind: st.session_state.answers.count(kind)
+        for kind in results
+    }
+    winner = max(scores, key=scores.get)
+    result = results[winner]
 
-    if st.session_state.result == "부자 달성! 🏆":
-        st.balloons()
-        st.success(
-            f"축하합니다! 최종 자산은 "
-            f"{st.session_state.money:,}원입니다."
-        )
-    elif st.session_state.result == "파산했어요! 💸":
-        st.error("자산이 바닥났습니다. 소비와 투자 전략을 바꿔 보세요!")
-    else:
-        st.info(
-            f"30일 동안 모은 최종 자산: "
-            f"{st.session_state.money:,}원"
-        )
+    st.balloons()
+    st.success("테스트 완료! 당신의 결과는...")
+    st.title(result["name"])
+    st.subheader(result["subtitle"])
+    st.write(result["desc"])
 
-    if st.button("🔄 다시 시작하기", use_container_width=True):
-        reset_game()
+    st.markdown("### 💪 나의 강점")
+    st.write(result["strength"])
+
+    st.markdown("### 🤔 조심할 점")
+    st.write(result["weakness"])
+
+    st.markdown("### 💡 회사 생활 꿀팁")
+    st.info(result["tip"])
+
+    st.markdown("### 📊 나의 성향 점수")
+    for kind, score in scores.items():
+        st.write(f"{results[kind]['name']} — {score}점")
+        st.progress(score / len(questions))
+
+    share_text = (
+        f"나의 회사 생활 유형은 {result['name']}!\n"
+        f"{result['subtitle']}\n{result['desc']}"
+    )
+
+    st.markdown("### 📣 친구에게 결과 공유하기")
+    st.code(share_text, language=None)
+    st.caption("위 결과를 복사해서 친구에게 보내 봐!")
+
+    if st.button("🔄 다시 테스트하기", use_container_width=True):
+        st.session_state.question_index = 0
+        st.session_state.answers = []
+        st.session_state.game_round += 1
         st.rerun()
 
-# -------------------------
-# 6. 게임 기록
-# -------------------------
-
 st.divider()
-st.subheader("📜 게임 기록")
-
-for item in st.session_state.logs:
-    st.write(item)
-    
+st.caption("※ 재미를 위한 테스트이며 실제 업무 능력을 진단하는 검사는 아닙니다.")
